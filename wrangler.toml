@@ -1,0 +1,36 @@
+name = "modern-url-shortener"
+main = "worker/index.ts"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "LINKS"
+id = "your-kv-namespace-id-for-links"
+preview_id = "your-preview-kv-namespace-id-for-links"
+
+[[kv_namespaces]]
+binding = "USER_URLS"
+id = "your-kv-namespace-id-for-user-urls"
+preview_id = "your-preview-kv-namespace-id-for-user-urls"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "your-kv-namespace-id-for-sessions"
+preview_id = "your-preview-kv-namespace-id-for-sessions"
+
+[[kv_namespaces]]
+binding = "ANALYTICS"
+id = "your-kv-namespace-id-for-analytics"
+preview_id = "your-preview-kv-namespace-id-for-analytics"
+
+[vars]
+ENVIRONMENT = "production"
+GOOGLE_CLIENT_ID = "your-google-client-id"
+BASE_URL = "https://go.mybd.shop"
+THEME_COLOR = "#FF3333"
+THEME_HOVER = "#000000"
+
+[build]
+command = "npm run build"
+
+[site]
+bucket = "./dist"
