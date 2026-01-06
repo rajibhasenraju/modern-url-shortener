@@ -1,50 +1,55 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ShortLink } from '@/types'
-import { formatDate, copyToClipboard, isExpired, getDaysRemaining } from '@/lib/utils'
-import { Copy, ExternalLink, Trash2, BarChart3, QrCode, Clock, Check } from 'lucide-react'
+import { Copy, QrCode, Trash2, ExternalLink, TrendingUp, Calendar } from 'lucide-react'
+import { Button } from './ui/Button'
+import { Card } from './ui/Card'
+import { copyToClipboard, formatDate, formatNumber, generateQRCode } from '@/lib/utils'
+import { toast } from '@/hooks/useToast'
+import { useDeleteLink } from '@/hooks/useLinks'
+import { BASE_URL } from '@/lib/constants'
+import type { ShortLink } from '@/types'
 
 interface LinkCardProps {
+  shortKey: string
   link: ShortLink
-  onDelete: () => void
 }
 
-export default function LinkCard({ link, onDelete }: LinkCardProps) {
-  const [copied, setCopied] = useState(false)
-  const navigate = useNavigate()
-  const shortUrl = `${import.meta.env.VITE_BASE_URL}/${link.key}`
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shortUrl)}&size=100x100`
-  const expired = isExpired(link.expiry)
-  const daysRemaining = getDaysRemaining(link.expiry)
+export function LinkCard({ shortKey, link }: LinkCardProps) {
+  const [showQR, setShowQR] = useState(false)
+  const [qrCode, setQrCode] = useState('')
+  const { mutate: deleteLink } = useDeleteLink()
+
+  const fullUrl = `${BASE_URL}/${shortKey}`
 
   const handleCopy = async () => {
-    await copyToClipboard(shortUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    await copyToClipboard(fullUrl)
+    toast.success('Link copied to clipboard!')
   }
 
+  const handleShowQR = async () => {
+    if (!qrCode) {
+      const code = await generateQRCode(fullUrl)
+      setQrCode(code)
+    }
+    setShowQR(!showQR)
+  }
+
+  const isExpired = link.expiry && Date.now() > link.expiry
+
   return (
-    <div className="card hover:shadow-md transition-shadow">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-2 mb-2">
-            <a
-              href={shortUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-lg font-semibold text-primary hover:underline truncate"
-            >
-              /{link.key}
-            </a>
-            {expired && (
-              <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">
-                Expired
-              </span>
-            )}
-            {!expired && daysRemaining !== null && daysRemaining <= 7 && (
-              <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded flex items-center space-x-1">
-                <Clock className="w-3 h-3" />
-                <span>{daysRemaining}d left</span>
+    <Card hover className="relative">
+      {isExpired && (
+        <div className="absolute top-2 right-2 bg-red-100 text-red-700 text-xs px-2 py-1 rounded">
+          Expired
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-lg font-bold text-gray-800">{shortKey}</h3>
+            {link.customKey && (
+              <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded">
+                Custom
               </span>
             )}
           </div>
@@ -52,55 +57,52 @@ export default function LinkCard({ link, onDelete }: LinkCardProps) {
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-600 hover:text-gray-900 truncate block text-sm"
+            className="text-sm text-gray-600 hover:text-primary flex items-center gap-1 break-all"
           >
             {link.url}
+            <ExternalLink className="w-3 h-3 flex-shrink-0" />
           </a>
-          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-            <span>{link.views} clicks</span>
-            <span>•</span>
-            <span>Created {formatDate(link.created)}</span>
+        </div>
+
+        <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-1">
+            <TrendingUp className="w-4 h-4" />
+            <span>{formatNumber(link.views)} views</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Calendar className="w-4 h-4" />
+            <span>{formatDate(link.created)}</span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <img src={qrUrl} alt="QR Code" className="w-16 h-16 border border-gray-200 rounded" />
-          
-          <button
-            onClick={handleCopy}
-            className="btn-secondary p-2"
-            title="Copy link"
-          >
-            {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-          </button>
+        {showQR && qrCode && (
+          <div className="flex justify-center pt-4 border-t">
+            <img src={qrCode} alt="QR Code" className="w-48 h-48" />
+          </div>
+        )}
 
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary p-2"
-            title="Visit original URL"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
-
-          <button
-            onClick={() => navigate(`/analytics/${link.key}`)}
-            className="btn-secondary p-2"
-            title="View analytics"
-          >
-            <BarChart3 className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onDelete}
-            className="btn-secondary p-2 hover:bg-red-100 hover:text-red-600"
-            title="Delete link"
+        <div className="flex gap-2 pt-2">
+          <Button onClick={handleCopy} variant="secondary" size="sm" className="flex-1">
+            <Copy className="w-4 h-4 mr-1" />
+            Copy
+          </Button>
+          <Button onClick={handleShowQR} variant="secondary" size="sm" className="flex-1">
+            <QrCode className="w-4 h-4 mr-1" />
+            QR
+          </Button>
+          <Button
+            onClick={() => deleteLink(shortKey)}
+            variant="danger"
+            size="sm"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
+        </div>
+
+        <div className="bg-gray-50 rounded px-3 py-2 flex items-center justify-between">
+          <code className="text-sm text-gray-700 font-mono">{fullUrl}</code>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
