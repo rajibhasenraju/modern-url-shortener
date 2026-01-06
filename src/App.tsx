@@ -1,15 +1,32 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuthStore } from './store/authStore'
+import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
+import RedirectHandler from './pages/RedirectHandler'
+import AuthCallback from './pages/AuthCallback'
+import Layout from './components/Layout'
 
 function App() {
+  const { user } = useAuthStore()
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<DashboardPage />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+      <Route
+        path="/"
+        element={
+          user ? (
+            <Layout>
+              <Dashboard />
+            </Layout>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route path="/:shortCode" element={<RedirectHandler />} />
+    </Routes>
   )
 }
 
