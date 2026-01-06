@@ -1,27 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { User } from '@/types'
 
-interface User {
-  email: string
-  name?: string
-}
-
-interface AuthState {
+interface AuthStore {
   user: User | null
   setUser: (user: User | null) => void
   logout: () => void
 }
 
-export const useAuthStore = create<AuthState>()()
+export const useAuthStore = create<AuthStore>()()
   persist(
-    (set) => ({
+    set => ({
       user: null,
-      setUser: (user) => set({ user }),
-      logout: () => {
-        document.cookie = 'session=; Max-Age=0; path=/'
-        set({ user: null })
-        window.location.href = '/'
-      },
+      setUser: user => set({ user }),
+      logout: () => set({ user: null }),
     }),
     {
       name: 'auth-storage',
