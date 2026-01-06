@@ -1,23 +1,24 @@
-import { useNavigate } from 'react-router-dom'
-import { Home } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { AlertCircle } from 'lucide-react'
 
-export default function NotFound() {
-  const navigate = useNavigate()
-
+const NotFound = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-9xl font-bold text-primary">404</h1>
-        <h2 className="text-3xl font-semibold text-gray-900 mt-4 mb-2">Page Not Found</h2>
-        <p className="text-gray-600 mb-8">The page you're looking for doesn't exist.</p>
-        <button
-          onClick={() => navigate('/')}
-          className="btn-primary inline-flex items-center space-x-2"
-        >
-          <Home className="w-4 h-4" />
-          <span>Go Home</span>
-        </button>
+      <div className="card max-w-md text-center">
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="w-10 h-10 text-gray-600" />
+        </div>
+        <h1 className="text-6xl font-bold text-gray-900 mb-2">404</h1>
+        <h2 className="text-2xl font-bold text-gray-700 mb-4">Page Not Found</h2>
+        <p className="text-gray-600 mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <Link to="/" className="btn-primary inline-block">
+          Back to Home
+        </Link>
       </div>
     </div>
   )
 }
+
+export default NotFound
