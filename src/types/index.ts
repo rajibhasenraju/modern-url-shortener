@@ -1,3 +1,9 @@
+export interface User {
+  email: string
+  name?: string
+  avatar?: string
+}
+
 export interface ShortLink {
   key: string
   url: string
@@ -6,41 +12,40 @@ export interface ShortLink {
   views: number
   expiry?: number
   customDomain?: string
+  title?: string
+  description?: string
+  image?: string
   tags?: string[]
-  password?: string
+  analytics?: LinkAnalytics
 }
 
-export interface LinkMetadata extends ShortLink {
-  qrCode?: string
-  shortUrl: string
-}
-
-export interface User {
-  email: string
-  name?: string
-  picture?: string
-}
-
-export interface AnalyticsData {
+export interface LinkAnalytics {
   totalClicks: number
   uniqueClicks: number
-  clicksByDate: { date: string; clicks: number }[]
-  clicksByCountry: { country: string; clicks: number }[]
-  clicksByDevice: { device: string; clicks: number }[]
-  clicksByBrowser: { browser: string; clicks: number }[]
+  clicksByDate: Record<string, number>
+  clicksByCountry: Record<string, number>
+  clicksByDevice: Record<string, number>
+  clicksByBrowser: Record<string, number>
+  clicksByReferrer: Record<string, number>
 }
 
 export interface CreateLinkRequest {
   url: string
   customKey?: string
-  expiryDays?: number
+  expiry?: number
+  title?: string
+  description?: string
   tags?: string[]
-  password?: string
 }
 
 export interface CreateLinkResponse {
-  success: boolean
-  shortKey?: string
-  shortUrl?: string
+  shortKey: string
+  shortUrl: string
   error?: string
+}
+
+export interface AnalyticsData {
+  date: string
+  clicks: number
+  uniqueClicks: number
 }
