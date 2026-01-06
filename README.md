@@ -1,318 +1,317 @@
 # 🔗 Modern URL Shortener
 
-> A feature-rich, production-ready URL shortener built with React, TypeScript, Tailwind CSS, and Cloudflare Workers.
+> A feature-rich URL shortening service built with React, TypeScript, Tailwind CSS, and deployed on Cloudflare Workers. Includes analytics, QR codes, custom domains, and more!
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/rajibhasenraju/modern-url-shortener)
 
 ## ✨ Features
 
-### Core Features
-- 🎯 **Custom Short URLs** - Create branded, memorable short links with custom slugs
-- 📊 **Advanced Analytics** - Track clicks, locations, devices, browsers, and referrers
-- 🔐 **Google OAuth** - Secure authentication with Google Sign-In
-- 📱 **QR Code Generation** - Automatic QR codes for every short link
-- ⏰ **Link Expiration** - Set expiration dates for temporary links
-- 🔒 **Password Protection** - Optional password protection for sensitive links
-- 🏷️ **Tags & Organization** - Categorize links with custom tags
+- 🚀 **Modern Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS
+- ⚡ **Blazing Fast**: Deployed on Cloudflare Workers Edge Network
+- 🔐 **Secure Authentication**: Google OAuth 2.0 integration
+- 📊 **Analytics Dashboard**: Track clicks, locations, devices, and browsers
+- 🎨 **QR Code Generation**: Instant QR codes for all short links
+- 🔗 **Custom Short URLs**: Create branded, memorable links
+- ⏱️ **Link Expiration**: Set automatic expiry for temporary links
+- 🌍 **Global CDN**: Fast link redirects worldwide
+- 📱 **Responsive Design**: Mobile-first, works on all devices
+- 🎯 **Type-Safe**: End-to-end TypeScript for reliability
 
-### Modern Features (Similar to Google Dynamic Links)
-- 🌍 **Global Edge Network** - Lightning-fast redirects via Cloudflare's CDN
-- 📈 **Real-time Analytics** - Live click tracking and statistics
-- 🎨 **Beautiful UI** - Modern, responsive interface with Tailwind CSS
-- 🔄 **Dynamic Redirects** - Smart routing based on device, location, etc.
-- 📊 **Visual Analytics** - Interactive charts with Recharts
-- 🚀 **Instant Deploy** - Deploy to Cloudflare Workers in minutes
+## 📸 Screenshots
+
+### Dashboard
+![Dashboard Preview](https://via.placeholder.com/800x400?text=Dashboard+Preview)
+
+### Analytics
+![Analytics Preview](https://via.placeholder.com/800x400?text=Analytics+Preview)
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18** - UI framework
+- **React 18** - UI library
 - **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
 - **Vite** - Build tool
-- **React Router** - Routing
+- **Tailwind CSS** - Styling
 - **React Query** - Server state management
 - **Zustand** - Client state management
-- **Recharts** - Analytics visualization
+- **React Router** - Routing
 - **Lucide React** - Icons
+- **Recharts** - Analytics charts
+- **QRCode** - QR code generation
 
 ### Backend
 - **Cloudflare Workers** - Serverless edge computing
 - **Cloudflare KV** - Distributed key-value storage
 - **Google OAuth 2.0** - Authentication
 
-## 📦 Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
+
+- Node.js 18+ 
+- npm or yarn
 - Cloudflare account
-- Google Cloud Console project
+- Google OAuth credentials
 
-### 1. Clone the repository
+### Installation
 
-```bash
-git clone https://github.com/rajibhasenraju/modern-url-shortener.git
-cd modern-url-shortener
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/rajibhasenraju/modern-url-shortener.git
+   cd modern-url-shortener
+   ```
 
-### 2. Install dependencies
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm install
-```
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` with your configuration:
+   ```env
+   VITE_API_URL=http://localhost:8787
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id
+   VITE_BASE_URL=http://localhost:3000
+   ```
 
-### 3. Set up Google OAuth
+4. **Create KV Namespaces**
+   ```bash
+   # Create production namespaces
+   wrangler kv:namespace create "LINKS"
+   wrangler kv:namespace create "USER_URLS"
+   wrangler kv:namespace create "SESSIONS"
+   wrangler kv:namespace create "ANALYTICS"
+   
+   # Create preview namespaces
+   wrangler kv:namespace create "LINKS" --preview
+   wrangler kv:namespace create "USER_URLS" --preview
+   wrangler kv:namespace create "SESSIONS" --preview
+   wrangler kv:namespace create "ANALYTICS" --preview
+   ```
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Google+ API
-4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
-5. Set authorized redirect URI: `https://your-domain.com/auth/callback`
-6. Copy the Client ID and Client Secret
+5. **Update wrangler.toml**
+   
+   Replace the namespace IDs in `wrangler.toml` with the IDs from step 4.
 
-### 4. Set up Cloudflare KV Namespaces
+6. **Set up Google OAuth**
+   
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing
+   - Enable Google+ API
+   - Create OAuth 2.0 credentials
+   - Add authorized redirect URIs:
+     - `http://localhost:3000/auth/callback` (development)
+     - `https://your-domain.com/auth/callback` (production)
 
-```bash
-# Login to Cloudflare
-npx wrangler login
+7. **Run development server**
+   ```bash
+   # Terminal 1: Frontend
+   npm run dev
+   
+   # Terminal 2: Worker
+   npm run dev:worker
+   ```
 
-# Create KV namespaces
-npx wrangler kv:namespace create "LINKS"
-npx wrangler kv:namespace create "USER_URLS"
-npx wrangler kv:namespace create "SESSIONS"
-npx wrangler kv:namespace create "ANALYTICS"
+   Open [http://localhost:3000](http://localhost:3000)
 
-# Create preview namespaces for development
-npx wrangler kv:namespace create "LINKS" --preview
-npx wrangler kv:namespace create "USER_URLS" --preview
-npx wrangler kv:namespace create "SESSIONS" --preview
-npx wrangler kv:namespace create "ANALYTICS" --preview
-```
+## 🌐 Deployment
 
-### 5. Configure environment variables
+### Deploy to Cloudflare Workers
 
-**Update `wrangler.toml`:**
+1. **Build the frontend**
+   ```bash
+   npm run build
+   ```
 
-```toml
-[[kv_namespaces]]
-binding = "LINKS"
-id = "your-links-namespace-id"
-preview_id = "your-links-preview-namespace-id"
+2. **Configure wrangler.toml**
+   
+   Update production values:
+   ```toml
+   [vars]
+   GOOGLE_CLIENT_ID = "your-production-client-id"
+   BASE_URL = "https://go.mybd.shop"
+   ```
 
-[[kv_namespaces]]
-binding = "USER_URLS"
-id = "your-user-urls-namespace-id"
-preview_id = "your-user-urls-preview-namespace-id"
+3. **Set secrets**
+   ```bash
+   wrangler secret put GOOGLE_CLIENT_SECRET
+   ```
 
-[[kv_namespaces]]
-binding = "SESSIONS"
-id = "your-sessions-namespace-id"
-preview_id = "your-sessions-preview-namespace-id"
+4. **Deploy**
+   ```bash
+   npm run deploy
+   ```
 
-[[kv_namespaces]]
-binding = "ANALYTICS"
-id = "your-analytics-namespace-id"
-preview_id = "your-analytics-preview-namespace-id"
+### Custom Domain Setup
 
-[vars]
-GOOGLE_CLIENT_ID = "your-google-client-id"
-BASE_URL = "https://your-domain.com"
-```
+1. Add your domain in Cloudflare Dashboard
+2. Go to Workers & Pages → your worker → Settings → Triggers
+3. Add custom domain
+4. Update `BASE_URL` in `wrangler.toml`
 
-**Create `.env` file:**
-
-```env
-VITE_API_URL=http://localhost:8787
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-VITE_BASE_URL=http://localhost:3000
-```
-
-**Create `.dev.vars` file for local development:**
-
-```env
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-BASE_URL=http://localhost:3000
-```
-
-### 6. Run development servers
-
-**Terminal 1 - Frontend:**
-```bash
-npm run dev
-```
-
-**Terminal 2 - Cloudflare Worker:**
-```bash
-npm run dev:worker
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🚀 Deployment
-
-### Deploy Frontend (Cloudflare Pages)
-
-```bash
-npm run build
-npx wrangler pages deploy dist
-```
-
-### Deploy Worker
-
-```bash
-npm run deploy
-```
-
-### Set Production Secrets
-
-```bash
-echo "your-google-client-secret" | npx wrangler secret put GOOGLE_CLIENT_SECRET
-```
-
-## 📖 Usage
-
-### Creating a Short Link
-
-1. Sign in with Google
-2. Click "Create Link" button
-3. Enter your long URL
-4. (Optional) Set custom key, expiration, password, or tags
-5. Click "Create Short Link"
-
-### Viewing Analytics
-
-1. Click the analytics icon (📊) on any link
-2. View detailed statistics:
-   - Total clicks and unique visitors
-   - Clicks over time (chart)
-   - Geographic distribution
-   - Device and browser breakdown
-
-### Managing Links
-
-- **Copy**: Click the copy icon to copy the short URL
-- **Visit**: Click the external link icon to visit the original URL
-- **Delete**: Click the trash icon to delete a link
-- **View QR**: QR codes are displayed automatically on each link card
-
-## 🏗️ Project Structure
+## 📁 Project Structure
 
 ```
 modern-url-shortener/
 ├── src/
-│   ├── components/         # React components
-│   │   ├── Navbar.tsx
+│   ├── components/       # React components
+│   │   ├── ui/          # Reusable UI components
+│   │   ├── LinkForm.tsx
 │   │   ├── LinkCard.tsx
-│   │   └── CreateLinkForm.tsx
-│   ├── contexts/          # React contexts
-│   │   └── AuthContext.tsx
-│   ├── hooks/             # Custom hooks
-│   ├── lib/               # Utilities and API
-│   │   ├── api.ts
-│   │   └── utils.ts
-│   ├── pages/             # Page components
+│   │   └── StatsCard.tsx
+│   ├── pages/           # Page components
 │   │   ├── Login.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── Analytics.tsx
-│   │   └── NotFound.tsx
-│   ├── types/             # TypeScript types
-│   │   └── index.ts
-│   ├── App.tsx            # Main app component
-│   ├── main.tsx           # Entry point
-│   └── index.css          # Global styles
-├── worker/                # Cloudflare Worker
-│   └── index.ts           # Worker logic
-├── wrangler.toml          # Cloudflare config
+│   │   └── Dashboard.tsx
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utilities and API
+│   ├── store/           # State management
+│   ├── types/           # TypeScript types
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── worker/              # Cloudflare Worker
+│   ├── index.ts         # Worker entry point
+│   └── types.ts         # Worker types
+├── public/              # Static assets
+├── wrangler.toml        # Worker configuration
 ├── package.json
-├── vite.config.ts
+├── tsconfig.json
 ├── tailwind.config.js
-└── tsconfig.json
+└── vite.config.ts
 ```
 
-## 🔧 API Endpoints
+## 🔧 Configuration
 
-### Worker Endpoints
+### Environment Variables
 
+**Frontend (.env)**
+```env
+VITE_API_URL=http://localhost:8787
+VITE_GOOGLE_CLIENT_ID=your-client-id
+VITE_BASE_URL=http://localhost:3000
+VITE_THEME_COLOR=#FF3333
+VITE_THEME_HOVER=#000000
 ```
-POST   /api/shorten         - Create short link
-GET    /api/links           - Get user's links
-GET    /api/analytics/:key  - Get link analytics
-DELETE /api/links/:key      - Delete link
-POST   /api/logout          - Logout
-GET    /api/me              - Get current user
-GET    /auth/callback       - Google OAuth callback
-GET    /:key                - Redirect to original URL
+
+**Worker (wrangler.toml)**
+```toml
+[vars]
+GOOGLE_CLIENT_ID = "your-client-id"
+BASE_URL = "https://go.mybd.shop"
+THEME_COLOR = "#FF3333"
 ```
+
+### Secrets (via Wrangler)
+```bash
+wrangler secret put GOOGLE_CLIENT_SECRET
+```
+
+## 📊 Analytics
+
+The platform tracks:
+- **Total clicks** per link
+- **Geographic data** (country, city)
+- **Device types** (mobile, tablet, desktop)
+- **Browsers** (Chrome, Firefox, Safari, etc.)
+- **Referrers** (where clicks came from)
+- **Time-series data** for trend analysis
 
 ## 🎨 Customization
 
-### Change Theme Colors
+### Theme Colors
 
 Edit `tailwind.config.js`:
-
-```javascript
-colors: {
-  primary: {
-    DEFAULT: '#FF3333',  // Your brand color
-    hover: '#000000',
+```js
+theme: {
+  extend: {
+    colors: {
+      primary: {
+        DEFAULT: '#FF3333',  // Your brand color
+        hover: '#000000',
+      },
+    },
   },
 }
 ```
 
 ### Custom Domain
 
-1. Add your domain to Cloudflare
-2. Update `BASE_URL` in `wrangler.toml`
-3. Update Google OAuth redirect URIs
-4. Deploy with `npm run deploy`
+Update `BASE_URL` in:
+- `.env` (development)
+- `wrangler.toml` (production)
 
-## 📊 Analytics Data
+## 🧪 Development
 
- The application tracks:
-- Total clicks
-- Unique visitors
-- Geographic distribution (by country)
-- Device types (Mobile/Desktop)
-- Browser information
-- Referrer sources
-- Click timestamps
+### Scripts
+
+```bash
+npm run dev          # Start Vite dev server
+npm run dev:worker   # Start Wrangler dev server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run deploy       # Deploy to Cloudflare
+npm run lint         # Run ESLint
+npm run format       # Format code with Prettier
+```
+
+### Code Quality
+
+- **ESLint** for linting
+- **Prettier** for formatting
+- **TypeScript** for type checking
+
+Run before committing:
+```bash
+npm run lint
+npm run format
+```
 
 ## 🔐 Security
 
-- **HTTPS Only** - All connections encrypted
-- **OAuth 2.0** - Secure authentication
-- **Session Management** - 30-day expiring sessions
-- **Password Protection** - Optional link passwords
-- **Input Validation** - All inputs sanitized
+- OAuth 2.0 authentication via Google
+- Session tokens stored in KV with TTL
+- CORS properly configured
+- Input validation on all endpoints
+- Rate limiting (via Cloudflare)
+
+## 📈 Performance
+
+- **Edge deployment** - Global low latency
+- **KV storage** - Distributed, fast reads
+- **React Query** - Optimistic updates, caching
+- **Code splitting** - Faster initial load
+- **Lazy loading** - Components loaded on demand
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
 5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License.
-
-## 👤 Author
-
-**Rajib Hasen Raju**
-- Website: [raju.app](https://raju.app)
-- GitHub: [@rajibhasenraju](https://github.com/rajibhasenraju)
-- Email: hello@raju.app
+MIT License - see [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with [Cloudflare Workers](https://workers.cloudflare.com/)
-- UI inspired by modern design patterns
-- Analytics powered by Cloudflare's global network
+- [Cloudflare Workers](https://workers.cloudflare.com/)
+- [React](https://react.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Vite](https://vitejs.dev/)
+
+## 📞 Support
+
+For issues and questions:
+- 🐛 [GitHub Issues](https://github.com/rajibhasenraju/modern-url-shortener/issues)
+- 📧 Email: hello@raju.app
 
 ---
 
-⭐ If you find this project useful, please consider giving it a star on GitHub!
+**Built with ❤️ by [Rajib Hasen Raju](https://raju.app)**
