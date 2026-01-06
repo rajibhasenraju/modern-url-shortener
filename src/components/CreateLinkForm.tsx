@@ -1,136 +1,134 @@
 import { useState } from 'react'
-import { CreateLinkRequest } from '@/types'
-import { validateUrl } from '@/lib/utils'
-import { X, Link, Hash, Clock, Lock } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { Link2, Sparkles, Calendar, Tag } from 'lucide-react'
+import { api } from '../lib/api'
+import { CreateLinkRequest } from '../types'
+import { toast } from '../lib/toast'
 
-interface CreateLinkFormProps {
-  onSubmit: (data: CreateLinkRequest) => void
-  onCancel: () => void
-  isLoading: boolean
-  error?: string
+interface Props {
+  onSuccess: () => void
 }
 
-export default function CreateLinkForm({ onSubmit, onCancel, isLoading, error }: CreateLinkFormProps) {
+const CreateLinkForm = ({ onSuccess }: Props) => {
   const [url, setUrl] = useState('')
-  const [customKey, setCustomKey] = useState('')
+  const [customAlias, setCustomAlias] = useState('')
   const [expiryDays, setExpiryDays] = useState('')
-  const [password, setPassword] = useState('')
-  const [urlError, setUrlError] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  const createMutation = useMutation({
+    mutationFn: (data: CreateLinkRequest) => api.createLink(data),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(`Link created: ${data.shortUrl}`)
+        setUrl('')
+        setCustomAlias('')
+        setExpiryDays('')
+        setShowAdvanced(false)
+        onSuccess()
+      } else {
+        toast.error(data.error || 'Failed to create link')
+      }
+    },
+    onError: () => {
+      toast.error('Failed to create link')
+    },
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setUrlError('')
-
-    if (!validateUrl(url)) {
-      setUrlError('Please enter a valid URL')
+    
+    if (!url) {
+      toast.error('Please enter a URL')
       return
     }
 
-    const data: CreateLinkRequest = {
+    createMutation.mutate({
       url,
-      customKey: customKey || undefined,
+      customAlias: customAlias || undefined,
       expiryDays: expiryDays ? parseInt(expiryDays) : undefined,
-      password: password || undefined,
-    }
-
-    onSubmit(data)
+    })
   }
 
   return (
-    <div className="card animate-slide-up">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Create New Short Link</h3>
-        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            <Link className="w-4 h-4 inline mr-1" />
-            Destination URL *
-          </label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Long URL *
+        </label>
+        <div className="relative">
+          <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="url"
             value={url}
-            onChange={e => setUrl(e.target.value)}
-            placeholder="https://example.com/your-long-url"
-            className="input"
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://example.com/very/long/url"
+            className="input-field pl-11"
             required
           />
-          {urlError && <p className="text-red-600 text-sm mt-1">{urlError}</p>}
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {showAdvanced && (
+        <div className="space-y-4 p-4 bg-gray-50 rounded-lg animate-slide-up">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <Hash className="w-4 h-4 inline mr-1" />
-              Custom Key (optional)
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Custom Alias (optional)
             </label>
-            <input
-              type="text"
-              value={customKey}
-              onChange={e => setCustomKey(e.target.value)}
-              placeholder="my-link"
-              pattern="[a-zA-Z0-9_-]+"
-              className="input"
-            />
+            <div className="relative">
+              <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={customAlias}
+                onChange={(e) => setCustomAlias(e.target.value)}
+                placeholder="my-custom-link"
+                pattern="[a-zA-Z0-9_-]+"
+                className="input-field pl-11"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Only letters, numbers, hyphens, and underscores
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <Clock className="w-4 h-4 inline mr-1" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Expiry (days)
             </label>
-            <input
-              type="number"
-              value={expiryDays}
-              onChange={e => setExpiryDays(e.target.value)}
-              placeholder="30"
-              min="1"
-              className="input"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <Lock className="w-4 h-4 inline mr-1" />
-              Password (optional)
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="input"
-            />
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="number"
+                value={expiryDays}
+                onChange={(e) => setExpiryDays(e.target.value)}
+                placeholder="30"
+                min="1"
+                max="365"
+                className="input-field pl-11"
+              />
+            </div>
           </div>
         </div>
+      )}
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-            {error}
-          </div>
-        )}
-
-        <div className="flex space-x-3">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="btn-primary flex-1"
-          >
-            {isLoading ? 'Creating...' : 'Create Short Link'}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={createMutation.isPending}
+          className="btn-primary flex-1"
+        >
+          {createMutation.isPending ? 'Creating...' : 'Create Short Link'}
+        </button>
+        
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="btn-secondary"
+        >
+          {showAdvanced ? 'Less' : 'More'} Options
+        </button>
+      </div>
+    </form>
   )
 }
+
+export default CreateLinkForm
