@@ -1,25 +1,26 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { User } from '@/types'
+
+interface User {
+  email: string
+  name?: string
+}
 
 interface AuthState {
   user: User | null
-  sessionToken: string | null
   setUser: (user: User | null) => void
-  setSessionToken: (token: string | null) => void
   logout: () => void
 }
 
-export const useAuthStore = create<AuthState>()(n  persist(
-    set => ({
+export const useAuthStore = create<AuthState>()()
+  persist(
+    (set) => ({
       user: null,
-      sessionToken: null,
-      setUser: user => set({ user }),
-      setSessionToken: token => set({ sessionToken: token }),
+      setUser: (user) => set({ user }),
       logout: () => {
-        set({ user: null, sessionToken: null })
         document.cookie = 'session=; Max-Age=0; path=/'
-        window.location.href = '/login'
+        set({ user: null })
+        window.location.href = '/'
       },
     }),
     {
