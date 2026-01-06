@@ -1,101 +1,93 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUserLinks, createShortLink, deleteLink } from '@/lib/api'
-import { CreateLinkRequest } from '@/types'
-import Navbar from '@/components/Navbar'
+import { Plus, TrendingUp, Link as LinkIcon, MousePointerClick } from 'lucide-react'
+import { linksApi } from '@/lib/api'
+import CreateLinkModal from '@/components/CreateLinkModal'
 import LinkCard from '@/components/LinkCard'
-import CreateLinkForm from '@/components/CreateLinkForm'
-import { Plus } from 'lucide-react'
+import StatsCard from '@/components/StatsCard'
+import type { ShortLink } from '@/types'
 
-export default function Dashboard() {
-  const { isAuthenticated, isLoading } = useAuth()
-  const navigate = useNavigate()
+function Dashboard() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const queryClient = useQueryClient()
-  const [showCreateForm, setShowCreateForm] = useState(false)
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate('/login')
-    }
-  }, [isAuthenticated, isLoading, navigate])
-
-  const { data: links, isLoading: linksLoading } = useQuery({
+  const { data: links, isLoading } = useQuery({
     queryKey: ['links'],
-    queryFn: getUserLinks,
-    enabled: isAuthenticated,
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (data: CreateLinkRequest) => createShortLink(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['links'] })
-      setShowCreateForm(false)
-    },
+    queryFn: linksApi.getAll,
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (key: string) => deleteLink(key),
+    mutationFn: linksApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['links'] })
     },
   })
 
-  if (isLoading || linksLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  const linksArray = links ? Object.entries(links).map(([key, link]) => ({ ...link, key })) : []
+  const totalLinks = linksArray.length
+  const totalClicks = linksArray.reduce((sum, link) => sum + (link.views || 0), 0)
+  const activeLinks = linksArray.filter(link => !link.expiry || link.expiry > Date.now()).length
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Your Links</h1>
-            <p className="text-gray-600 mt-1">
-              {links?.length || 0} short {links?.length === 1 ? 'link' : 'links'} created
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="btn-primary inline-flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Link</span>
-          </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Manage and track your short links</p>
+        </div>
+        <button onClick={() => setIsCreateModalOpen(true)} className="btn-primary flex items-center gap-2">
+          <Plus className="w-5 h-5" />
+          Create Short Link
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatsCard
+          title="Total Links"
+          value={totalLinks}
+          icon={LinkIcon}
+          color="blue"
+        />
+        <StatsCard
+          title="Total Clicks"
+          value={totalClicks}
+          icon={MousePointerClick}
+          color="green"
+        />
+        <StatsCard
+          title="Active Links"
+          value={activeLinks}
+          icon={TrendingUp}
+          color="purple"
+        />
+      </div>
+
+      {/* Links List */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Your Links</h2>
+          <span className="text-sm text-gray-500">{totalLinks} total</span>
         </div>
 
-        {showCreateForm && (
-          <div className="mb-8">
-            <CreateLinkForm
-              onSubmit={data => createMutation.mutate(data)}
-              onCancel={() => setShowCreateForm(false)}
-              isLoading={createMutation.isPending}
-              error={createMutation.error?.message}
-            />
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading your links...</p>
           </div>
-        )}
-
-        {!links || links.length === 0 ? (
-          <div className="card text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No links yet</h3>
+        ) : linksArray.length === 0 ? (
+          <div className="text-center py-12">
+            <LinkIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No links yet</h3>
             <p className="text-gray-600 mb-6">Create your first short link to get started</p>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="btn-primary inline-flex items-center space-x-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Your First Link</span>
+            <button onClick={() => setIsCreateModalOpen(true)} className="btn-primary">
+              Create Link
             </button>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {links.map(link => (
+          <div className="space-y-4">
+            {linksArray.map(link => (
               <LinkCard
                 key={link.key}
                 link={link}
@@ -105,6 +97,14 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Create Link Modal */}
+      <CreateLinkModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   )
 }
+
+export default Dashboard
